@@ -22,8 +22,8 @@ function youtubeArgs(extra=[]) {
   return [
     ...extra,
     '--js-runtimes','node',
-    '--extractor-args','youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server',
-    '--extractor-args','youtube:player-client=mweb,tv,web_safari'
+    '--extractor-args','youtubepot-bgutilscript:script_path=/opt/bgutil-ytdlp-pot-provider/server/build/generate_once.js',
+    '--extractor-args','youtube:player-client=mweb'
   ];
 }
 
