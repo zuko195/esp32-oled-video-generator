@@ -18,6 +18,15 @@ function n(value, fallback, min, max) {
   return Number.isFinite(x) ? Math.max(min, Math.min(max, x)) : fallback;
 }
 
+function youtubeArgs(extra=[]) {
+  return [
+    ...extra,
+    '--js-runtimes','node',
+    '--extractor-args','youtubepot-bgutilscript:server_home=/opt/bgutil-ytdlp-pot-provider/server',
+    '--extractor-args','youtube:player-client=mweb,tv,web_safari'
+  ];
+}
+
 function isYoutube(url) {
   try {
     const host = new URL(url).hostname.replace(/^www\./, '').toLowerCase();
@@ -45,7 +54,7 @@ function run(cmd, args, timeoutMs = 120000) {
 async function infoFor(url) {
   try { new URL(url); } catch { throw new Error('Invalid video URL.'); }
   if (isYoutube(url)) {
-    const { stdout } = await run('yt-dlp', ['--dump-single-json', '--no-playlist', '--no-warnings', url], 90000);
+    const { stdout } = await run('yt-dlp', youtubeArgs(['--dump-single-json', '--no-playlist', '--no-warnings', url]), 90000);
     const d = JSON.parse(stdout);
     return {
       title: d.title || 'YouTube video',
@@ -77,11 +86,11 @@ async function infoFor(url) {
 
 async function playableUrl(url) {
   if (!isYoutube(url)) return url;
-  const { stdout } = await run('yt-dlp', [
+  const { stdout } = await run('yt-dlp', youtubeArgs([
     '-g','--no-playlist',
     '-f','bestvideo[height<=720]/bestvideo/best',
     url
-  ], 120000);
+  ]), 120000);
   const first = stdout.trim().split(/\r?\n/).find(Boolean);
   if (!first) throw new Error('yt-dlp did not return a playable video stream.');
   return first;
