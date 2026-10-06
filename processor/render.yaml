@@ -1,0 +1,8 @@
+services:
+  - type: web
+    name: oledframe-processor
+    runtime: docker
+    dockerfilePath: ./processor/Dockerfile
+    dockerContext: .
+    plan: free
+    healthCheckPath: /health
