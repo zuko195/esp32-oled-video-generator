@@ -1,0 +1,246 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="description" content="OLEDFrame Studio converts videos into ESP32 SSD1306 OLED animations and generates Arduino projects.">
+<title>OLEDFrame Studio — ESP32 OLED Animation Generator</title>
+<style>
+:root{--bg:#0a0c0f;--panel:#101419;--panel2:#151a20;--line:#252c34;--text:#f3f5f7;--muted:#98a2ad;--accent:#9cff57;--accent2:#d8ffb8;--danger:#ff7373;--shadow:0 24px 80px rgba(0,0,0,.34)}
+*{box-sizing:border-box}html,body{margin:0;background:radial-gradient(circle at 10% 0%,#151c13 0,#0a0c0f 38%),#0a0c0f;color:var(--text);font-family:Inter,ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif}body{min-height:100vh}
+button,input,select{font:inherit}.wrap{max-width:1260px;margin:0 auto;padding:24px}.top{display:flex;justify-content:space-between;align-items:center;gap:18px;margin-bottom:24px}.brand{display:flex;align-items:center;gap:12px}.mark{width:42px;height:42px;border:1px solid var(--line);border-radius:12px;display:grid;place-items:center;font-weight:900;background:#0f1317;color:var(--accent)}.brand h1{margin:0;font-size:18px}.brand p{margin:3px 0 0;color:var(--muted);font-size:12px}.ghost{border:1px solid var(--line);background:#0e1216;color:var(--text);padding:10px 14px;border-radius:10px;cursor:pointer}.hero{display:flex;justify-content:space-between;gap:22px;align-items:end;margin-bottom:22px}.eyebrow{display:inline-flex;gap:8px;align-items:center;color:var(--accent);font-size:11px;font-weight:800;letter-spacing:.16em}.hero h2{font-size:40px;line-height:1.02;margin:8px 0 10px;max-width:780px}.hero p{margin:0;max-width:740px;color:var(--muted);line-height:1.55}.pill{white-space:nowrap;border:1px solid #32402a;background:#10170d;color:var(--accent2);padding:10px 14px;border-radius:999px;font-size:12px}
+.grid{display:grid;grid-template-columns:minmax(0,1.2fr) minmax(320px,.8fr);gap:18px}.stack{display:grid;gap:18px}.card{background:linear-gradient(180deg,rgba(255,255,255,.02),rgba(255,255,255,.008)),var(--panel);border:1px solid var(--line);border-radius:18px;padding:18px;box-shadow:var(--shadow)}.head{display:flex;justify-content:space-between;gap:14px;align-items:start;margin-bottom:14px}.step{font-size:11px;color:var(--accent);font-weight:900;letter-spacing:.12em}.head h3{margin:6px 0 0;font-size:18px}.chip{font-size:11px;color:var(--muted);padding:7px 10px;border:1px solid var(--line);border-radius:999px}.chip.ok{color:var(--accent);border-color:#2f4527}.tabs{display:flex;gap:8px;margin-bottom:12px}.tab{border:1px solid var(--line);background:#0e1216;color:var(--muted);padding:9px 12px;border-radius:10px;cursor:pointer}.tab.active{background:#18200f;color:var(--accent2);border-color:#32402a}.panel{display:none}.panel.active{display:block}.drop{border:1px dashed #3a444f;border-radius:14px;padding:28px;text-align:center;background:#0d1115}.drop.drag{border-color:var(--accent);background:#10160d}.drop .icon{font-size:26px;color:var(--accent);margin-bottom:8px}.drop strong{display:block}.drop span{display:block;color:var(--muted);font-size:12px;margin-top:5px}.drop .pick{display:inline-block;margin-top:14px;background:var(--accent);color:#10150b;border:none;border-radius:10px;padding:10px 14px;font-weight:800;cursor:pointer}.row{display:grid;grid-template-columns:1fr auto;gap:10px}.input,select{width:100%;background:#0c1014;color:var(--text);border:1px solid var(--line);padding:10px 11px;border-radius:10px;outline:none}.input:focus,select:focus{border-color:#46525e}.note{margin-top:9px;color:var(--muted);font-size:12px;line-height:1.5}.meta{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:14px}.meta div,.stat{border:1px solid var(--line);background:#0d1115;border-radius:12px;padding:10px}.meta span,.stat span{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;letter-spacing:.09em}.meta strong,.stat strong{display:block;margin-top:5px;font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.choice{display:flex;gap:8px}.choice button{flex:1}.choice button.active{border-color:#3b4e2e;background:#17200f;color:var(--accent2)}.btn{border:1px solid var(--line);background:#0e1216;color:var(--text);padding:10px 12px;border-radius:10px;cursor:pointer}.btn.primary{border-color:#8fcf50;background:var(--accent);color:#0c1307;font-weight:900}.btn:disabled{opacity:.45;cursor:not-allowed}.timeline{position:relative;height:48px;margin:6px 0 12px}.track{position:absolute;top:20px;left:0;right:0;height:6px;background:#252c34;border-radius:99px}.fill{position:absolute;top:20px;height:6px;background:var(--accent);border-radius:99px}.timeline input{position:absolute;inset:0;width:100%;pointer-events:none;appearance:none;background:transparent}.timeline input::-webkit-slider-thumb{pointer-events:auto;appearance:none;width:18px;height:18px;border:2px solid #0a0d10;background:var(--accent);border-radius:50%;cursor:pointer}.timeline input::-moz-range-thumb{pointer-events:auto;width:16px;height:16px;border:2px solid #0a0d10;background:var(--accent);border-radius:50%;cursor:pointer}.timegrid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px}.timebox label{display:block;color:var(--muted);font-size:10px;text-transform:uppercase;margin-bottom:6px}.timebox input{width:100%}.toggleRow{display:flex;justify-content:space-between;align-items:center;gap:14px;border:1px solid var(--line);background:#0d1115;border-radius:14px;padding:14px}.toggleTitle{font-weight:800}.toggleSub{font-size:12px;color:var(--muted);margin-top:4px}.switch{width:52px;height:30px;border-radius:99px;background:#252c34;border:1px solid #313a44;position:relative;cursor:pointer;flex:none}.switch span{width:22px;height:22px;position:absolute;top:3px;left:3px;border-radius:50%;background:#9aa3ac;transition:.2s}.switch.on{background:#23351b;border-color:#6e9d42}.switch.on span{left:25px;background:var(--accent)}.formgrid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.field label{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:11px;margin-bottom:7px}.range{width:100%}.hidden{display:none!important}.advanced{margin-top:12px}.advanced button{width:100%;text-align:left}.advancedPanel{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:12px;padding-top:12px;border-top:1px solid var(--line)}.check{display:flex;gap:8px;align-items:center;color:var(--muted);font-size:12px}.previewWrap{border:1px solid var(--line);background:#070909;border-radius:14px;padding:16px}.oled{width:100%;aspect-ratio:2/1;background:#020303;border:10px solid #0f1311;border-radius:12px;image-rendering:pixelated;display:block}.previewBar{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-top:10px}.previewStatus{color:var(--muted);font-size:12px}.stats{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}.compat{margin-top:12px;padding:12px;border-radius:12px;border:1px solid #2f4527;background:#10160d;color:#cfe9bf;display:flex;gap:10px;align-items:start;font-size:12px;line-height:1.45}.compat.bad{border-color:#503131;background:#170f0f;color:#ffc0c0}.cta{display:grid;grid-template-columns:1fr 1fr;gap:10px}.progress{margin-top:12px}.bar{height:8px;background:#252c34;border-radius:99px;overflow:hidden}.bar span{display:block;height:100%;width:0;background:var(--accent);transition:width .12s}.progress p{margin:7px 0 0;color:var(--muted);font-size:11px}.foot{padding:20px 2px;color:#68737e;font-size:11px;line-height:1.5}.mono{font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace}.small{font-size:11px}.toast{position:fixed;right:18px;bottom:18px;background:#101419;border:1px solid var(--line);padding:12px 14px;border-radius:12px;box-shadow:var(--shadow);max-width:360px;display:none;font-size:12px}.toast.show{display:block}@media(max-width:960px){.grid{grid-template-columns:1fr}.hero{align-items:start;flex-direction:column}.hero h2{font-size:32px}}@media(max-width:620px){.wrap{padding:14px}.meta,.stats{grid-template-columns:1fr 1fr}.formgrid,.advancedPanel,.cta,.timegrid{grid-template-columns:1fr}.hero h2{font-size:28px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+<header class="top">
+  <div class="brand"><div class="mark">OF</div><div><h1>OLEDFrame Studio</h1><p>Video → ESP32 SSD1306 animation</p></div></div>
+  <button class="ghost" id="resetBtn">Reset</button>
+</header>
+
+<section class="hero">
+  <div><span class="eyebrow">STANDALONE ESP32 TOOL</span><h2>Turn almost any video into a tiny monochrome OLED animation.</h2><p>Pick a full video or exact clip, preview it at 128×64, let Auto Optimize choose sensible settings, or take full manual control — then download a ready-to-upload Arduino project.</p></div>
+  <div class="pill">ESP32 + SSD1306 · 128×64</div>
+</section>
+
+<div class="grid">
+  <div class="stack">
+    <section class="card">
+      <div class="head"><div><span class="step">01 · VIDEO</span><h3>Choose your video</h3></div><span class="chip" id="videoStatus">Waiting for video</span></div>
+      <div class="tabs">
+        <button class="tab active" data-tab="file">Upload video</button>
+        <button class="tab" data-tab="url">Direct video URL</button>
+      </div>
+      <div class="panel active" id="filePanel">
+        <div class="drop" id="dropZone"><div class="icon">↑</div><strong>Drop a video here</strong><span>or choose a browser-supported video file</span><label class="pick" for="videoInput">Choose video</label><input id="videoInput" type="file" accept="video/*" hidden></div>
+      </div>
+      <div class="panel" id="urlPanel">
+        <div class="row"><input class="input" id="videoUrl" placeholder="https://example.com/video.mp4"><button class="btn primary" id="loadUrlBtn">Load</button></div>
+        <div class="note">A YouTube watch-page URL is not a direct video file. This MVP supports direct video URLs that the browser can load; YouTube import is reserved for the server-side media processor.</div>
+      </div>
+      <div class="meta"><div><span>File</span><strong id="metaName">—</strong></div><div><span>Duration</span><strong id="metaDuration">—</strong></div><div><span>Source FPS</span><strong id="metaFps">—</strong></div><div><span>Resolution</span><strong id="metaResolution">—</strong></div></div>
+      <video id="sourceVideo" preload="metadata" playsinline muted style="display:none"></video>
+      <canvas id="workCanvas" width="128" height="64" style="display:none"></canvas>
+    </section>
+
+    <section class="card">
+      <div class="head"><div><span class="step">02 · CLIP</span><h3>Choose the time range</h3></div><span class="chip" id="selectedDuration">0.0 s</span></div>
+      <div class="choice"><button class="btn active" data-mode="full">Full video</button><button class="btn" data-mode="clip">Custom clip</button></div>
+      <div class="timeline"><div class="track"></div><div class="fill" id="timelineFill"></div><input id="startRange" type="range" min="0" max="1" value="0" step="0.01"><input id="endRange" type="range" min="0" max="1" value="1" step="0.01"></div>
+      <div class="timegrid">
+        <div class="timebox"><label>Start</label><input class="input" id="startTime" value="00:00"></div>
+        <div class="timebox"><label>End</label><input class="input" id="endTime" value="00:00"></div>
+        <div class="timebox"><label>Selected</label><input class="input" id="selectedSeconds" value="0.0 s" disabled></div>
+      </div>
+    </section>
+
+    <section class="card">
+      <div class="head"><div><span class="step">03 · OPTIMIZE</span><h3>Automatic or manual?</h3></div><span class="chip">Auto + advanced</span></div>
+      <div class="toggleRow">
+        <div><div class="toggleTitle">Auto Optimize</div><div class="toggleSub">Choose sensible FPS and processing for the selected clip.</div></div>
+        <button class="switch on" id="autoToggle" aria-label="Toggle Auto Optimize" aria-pressed="true"><span></span></button>
+      </div>
+      <div class="formgrid" style="margin-top:12px">
+        <div class="field"><label>Optimization mode</label><select id="optimizationMode"><option value="balanced">Balanced</option><option value="quality">Quality</option><option value="compression">Maximum Compression</option></select></div>
+        <div class="field"><label>OLED target</label><select id="resolution"><option value="128x64">128 × 64</option><option value="128x32">128 × 32</option></select></div>
+      </div>
+      <div class="advanced"><button class="btn" id="advancedBtn">Show advanced settings</button><div class="advancedPanel hidden" id="advancedPanel">
+        <div class="field"><label>FPS <span id="fpsHelp">8</span></label><select id="fpsSelect"><option value="2">2</option><option value="4">4</option><option value="5">5</option><option value="6">6</option><option value="8" selected>8</option><option value="10">10</option><option value="12">12</option><option value="15">15</option><option value="custom">Custom</option></select></div>
+        <div class="field hidden" id="customFpsWrap"><label>Custom FPS</label><input class="input" id="customFps" type="number" min=".5" max="20" step=".5" value="8"></div>
+        <div class="field"><label>Crop / scale</label><select id="fitMode"><option value="contain">Fit (letterbox)</option><option value="cover" selected>Center crop</option><option value="stretch">Stretch</option></select></div>
+        <div class="field"><label>Dithering</label><select id="dither"><option value="off">Off</option><option value="ordered" selected>Ordered</option><option value="floyd">Floyd–Steinberg</option></select></div>
+        <div class="field"><label>Brightness <span id="brightnessValue">0</span></label><input class="range" id="brightness" type="range" min="-100" max="100" value="0"></div>
+        <div class="field"><label>Contrast <span id="contrastValue">100</span></label><input class="range" id="contrast" type="range" min="0" max="200" value="100"></div>
+        <div class="field"><label>Threshold <span id="thresholdValue">128</span></label><input class="range" id="threshold" type="range" min="0" max="255" value="128"></div>
+        <label class="check"><input id="invert" type="checkbox"> Invert</label>
+        <label class="check"><input id="dedupe" type="checkbox" checked> Remove duplicate frames</label>
+        <label class="check"><input id="compression" type="checkbox" checked> Use RLE compression when smaller</label>
+        <label class="check"><input id="loop" type="checkbox" checked> Loop animation</label>
+      </div></div>
+    </section>
+  </div>
+
+  <div class="stack">
+    <section class="card">
+      <div class="head"><div><span class="step">04 · PREVIEW</span><h3>OLED preview</h3></div><span class="chip" id="previewStatus">No frames yet</span></div>
+      <div class="previewWrap"><canvas id="previewCanvas" class="oled" width="128" height="64"></canvas><div class="previewBar"><span class="previewStatus mono" id="previewFrame">Ready</span><button class="btn" id="previewBtn">Generate preview</button></div></div>
+    </section>
+
+    <section class="card">
+      <div class="head"><div><span class="step">05 · ESTIMATE</span><h3>Storage & compatibility</h3></div><span class="chip" id="compatChip">Waiting</span></div>
+      <div class="stats"><div class="stat"><span>Frames</span><strong id="infoFrames">—</strong></div><div class="stat"><span>Effective FPS</span><strong id="infoFps">—</strong></div><div class="stat"><span>Estimated data</span><strong id="infoSize">—</strong></div><div class="stat"><span>Status</span><strong id="infoCompat">—</strong></div></div>
+      <div class="compat" id="compatBox"><span>•</span><div>Load a video to calculate an estimate.</div></div>
+      <div class="note">Estimates are based on packed 1-bit frame data and the selected processing mode. Actual compiled size can vary.</div>
+    </section>
+
+    <section class="card">
+      <div class="head"><div><span class="step">06 · GENERATE</span><h3>Arduino project</h3></div><span class="chip">Ready-to-upload structure</span></div>
+      <div class="cta"><button class="btn" id="generateBtn" disabled>Generate project ZIP</button><button class="btn" id="resetBtn2">Start over</button></div>
+      <div class="progress hidden" id="progressWrap"><div class="bar"><span id="progressBar"></span></div><p id="progressText">Preparing…</p></div>
+      <div class="note">The ZIP contains <span class="mono">ESP32_OLED_Animation.ino</span>, <span class="mono">animation.h</span>, and <span class="mono">README.txt</span>.</div>
+    </section>
+  </div>
+</div>
+
+<footer class="foot">OLEDFrame Studio is a standalone ESP32 OLED project. Default wiring: SSD1306 SDA → GPIO 21, SCL → GPIO 22, address 0x3C. This browser MVP processes uploaded videos or direct video URLs; server-side YouTube retrieval is a separate planned component.</footer>
+</div>
+<div class="toast" id="toast"></div>
+<script src="https://cdn.jsdelivr.net/npm/jszip@3.10.1/dist/jszip.min.js"></script>
+<script>
+(function(){
+'use strict';
+var $=function(id){return document.getElementById(id)};
+var state={duration:0,name:'',url:null,width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};
+
+function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function fmt(s){s=Math.max(0,Number(s)||0);var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);return h?String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
+function parseTime(v){var p=String(v||'').trim().split(':').map(Number);if(p.some(function(n){return Number.isNaN(n)}))return NaN;if(p.length===3)return p[0]*3600+p[1]*60+p[2];if(p.length===2)return p[0]*60+p[1];return Number(v)}
+function resolution(){var p=$('resolution').value.split('x').map(Number);return {w:p[0],h:p[1],bytes:Math.ceil(p[0]*p[1]/8)}}
+function fps(){return $('fpsSelect').value==='custom'?clamp(Number($('customFps').value)||8,.5,20):Number($('fpsSelect').value)}
+function clip(){var s=clamp(parseTime($('startTime').value),0,state.duration||0),e=clamp(parseTime($('endTime').value),0,state.duration||0);if(!(s<e)){s=0;e=state.duration||0}return {s:s,e:e}}
+function autoFps(seconds){var base=fps(),m=$('optimizationMode').value;if(!state.auto)return base;if(m==='quality')return Math.min(base,seconds>180?5:seconds>90?6:8);if(m==='compression')return Math.min(base,seconds>120?4:5);return Math.min(base,seconds>180?5:seconds>90?6:seconds>45?8:base)}
+function estimate(){
+ var c=clip(),d=Math.max(0,c.e-c.s),r=resolution(),f=autoFps(d),count=Math.max(1,Math.ceil(d*f)),factor=$('compression').checked?.72:1,bytes=Math.round(count*r.bytes*factor);
+ state.width=r.w;state.height=r.h;state.bytes=r.bytes;
+ $('infoFrames').textContent=count.toLocaleString();$('infoFps').textContent=(Math.round(f*10)/10).toString();$('infoSize').textContent=human(bytes);
+ var ok=bytes<=2.6*1024*1024; $('infoCompat').textContent=ok?'Good':'Large';$('compatChip').textContent=ok?'Good':'Large';$('compatChip').classList.toggle('ok',ok);
+ $('compatBox').className='compat'+(ok?'':' bad');$('compatBox').innerHTML='<span>'+(ok?'✓':'!')+'</span><div>'+(ok?'This estimate is practical for a typical 4 MB ESP32 flash target. Actual compiled size varies.':'This animation is large. Reduce FPS, shorten the clip, or use stronger compression settings.')+'</div>';
+}
+function human(n){return n<1024?n+' B':n<1048576?(n/1024).toFixed(1)+' KB':(n/1048576).toFixed(2)+' MB'}
+function setProgress(r,msg){$('progressWrap').classList.remove('hidden');$('progressBar').style.width=(clamp(r,0,1)*100)+'%';$('progressText').textContent=msg}
+function toast(msg){$('toast').textContent=msg;$('toast').classList.add('show');clearTimeout(window.__toast);window.__toast=setTimeout(function(){$('toast').classList.remove('show')},3200)}
+function setVideoStatus(t,ok){$('videoStatus').textContent=t;$('videoStatus').classList.toggle('ok',!!ok);$('generateBtn').disabled=!ok}
+function updateTimeline(){
+ if(!state.duration)return;
+ var s=clamp(Number($('startRange').value),0,state.duration),e=clamp(Number($('endRange').value),0,state.duration);if(s>=e)s=Math.max(0,e-.01);
+ $('startRange').value=s;$('endRange').value=e;$('startTime').value=fmt(s);$('endTime').value=fmt(e);$('selectedDuration').textContent=Math.max(0,e-s).toFixed(1)+' s';$('selectedSeconds').value=Math.max(0,e-s).toFixed(1)+' s';
+ var ps=s/state.duration*100,pe=e/state.duration*100;$('timelineFill').style.left=ps+'%';$('timelineFill').style.width=(pe-ps)+'%';estimate();
+}
+function loadVideo(src,name){
+ return new Promise(function(resolve,reject){
+   if(state.url&&state.url.indexOf('blob:')===0)URL.revokeObjectURL(state.url);
+   state.url=src;$('sourceVideo').src=src;$('sourceVideo').load();
+   var v=$('sourceVideo');
+   var good=function(){cleanup();state.duration=Number.isFinite(v.duration)?v.duration:0;state.sourceW=v.videoWidth;state.sourceH=v.videoHeight;state.name=name||'video';$('metaName').textContent=state.name;$('metaDuration').textContent=fmt(state.duration);$('metaFps').textContent='Browser metadata unavailable';$('metaResolution').textContent=state.sourceW+' × '+state.sourceH;$('startRange').max=state.duration;$('endRange').max=state.duration;$('startRange').value=0;$('endRange').value=state.duration;$('startTime').value='00:00';$('endTime').value=fmt(state.duration);setVideoStatus('Video ready',true);updateTimeline();clearPreview();resolve()};
+   var bad=function(){cleanup();reject(new Error('The browser could not load this video.'))};
+   var cleanup=function(){v.removeEventListener('loadedmetadata',good);v.removeEventListener('error',bad)};
+   v.addEventListener('loadedmetadata',good);v.addEventListener('error',bad);
+ });
+}
+function clearPreview(msg){var c=$('previewCanvas'),x=c.getContext('2d');x.fillStyle='#020303';x.fillRect(0,0,c.width,c.height);$('previewStatus').textContent=msg||'No frames yet';$('previewFrame').textContent='Ready';state.frames=[];state.delays=[]}
+function seek(t){
+ return new Promise(function(resolve,reject){
+  var v=$('sourceVideo');if(Math.abs(v.currentTime-t)<.005){resolve();return}
+  var done=function(){clean();resolve()},err=function(){clean();reject(new Error('Video seek failed.'))},clean=function(){v.removeEventListener('seeked',done);v.removeEventListener('error',err)};
+  v.addEventListener('seeked',done);v.addEventListener('error',err);v.currentTime=t;
+ });
+}
+function drawSource(ctx,w,h,mode){
+ var v=$('sourceVideo'),dw=w,dh=h;ctx.fillStyle='black';ctx.fillRect(0,0,w,h);ctx.imageSmoothingEnabled=true;
+ if(mode==='stretch'){ctx.drawImage(v,0,0,dw,dh);return}
+ var scale=mode==='cover'?Math.max(dw/v.videoWidth,dh/v.videoHeight):Math.min(dw/v.videoWidth,dh/v.videoHeight);
+ var sw=v.videoWidth*scale,sh=v.videoHeight*scale;ctx.drawImage(v,(dw-sw)/2,(dh-sh)/2,sw,sh);
+}
+function processCanvas(ctx,w,h){
+ var img=ctx.getImageData(0,0,w,h),d=img.data,bright=Number($('brightness').value),cont=Number($('contrast').value)/100,thr=Number($('threshold').value),invert=$('invert').checked,method=$('dither').value;
+ var g=new Float32Array(w*h),i=0;
+ for(var y=0;y<h;y++)for(var x=0;x<w;x++,i++){var p=i*4;var v=.299*d[p]+.587*d[p+1]+.114*d[p+2];v=(v-128)*cont+128+bright;g[i]=clamp(v,0,255)}
+ var bits=new Uint8Array(Math.ceil(w*h/8)),idx=0;
+ function put(k,on){if(on)bits[k>>3]|=(1<<(7-(k&7)))}
+ if(method==='floyd'){
+   var err=new Float32Array(g);
+   for(var yy=0;yy<h;yy++)for(var xx=0;xx<w;xx++){var k=yy*w+xx,old=err[k],on=old>=thr,val=on?255:0,e=old-val;put(k,invert?!on:on);if(xx+1<w)err[k+1]+=e*7/16;if(yy+1<h){if(xx>0)err[k+w-1]+=e*3/16;err[k+w]+=e*5/16;if(xx+1<w)err[k+w+1]+=e/16}}}
+ else {
+   var mat=method==='ordered'?[0,2,3,1]:[0,0,0,0];
+   for(var yy2=0;yy2<h;yy2++)for(var xx2=0;xx2<w;xx2++){var k2=yy2*w+xx2,v2=g[k2],adj=method==='ordered'?(mat[(yy2&1)*2+(xx2&1)]-1.5)*28:0,on2=v2>=(thr+adj);put(k2,invert?!on2:on2)}
+ }
+ return bits;
+}
+function signature(a){var s=0;for(var i=0;i<a.length;i++)s=(s+(a[i]*(i+1)))>>>0;return s.toString(16)}
+function effectiveSettings(){
+ var c=clip(),d=Math.max(.01,c.e-c.s),f=autoFps(d);var r=resolution();
+ if(state.auto){if($('optimizationMode').value==='compression'&&$('dither').value==='floyd')$('dither').value='ordered';}
+ return {start:c.s,end:c.e,duration:d,fps:f,r:r,delay:Math.max(1,Math.round(1000/f)),fit:$('fitMode').value,dedupe:$('dedupe').checked,compression:$('compression').checked};
+}
+async function generateFrames(){
+ if(!state.duration)throw new Error('Choose a video first.');
+ var s=effectiveSettings(),count=Math.max(1,Math.ceil(s.duration*s.fps)),ctx=$('workCanvas').getContext('2d',{willReadFrequently:true});$('workCanvas').width=s.r.w;$('workCanvas').height=s.r.h;
+ state.frames=[];state.delays=[];var lastSig=null;
+ for(var n=0;n<count;n++){
+   var t=Math.min(s.end-.0001,s.start+n/s.fps);await seek(t);drawSource(ctx,s.r.w,s.r.h,s.fit);var raw=processCanvas(ctx,s.r.w,s.r.h);var sig=s.dedupe?signature(raw):'';if(s.dedupe&&sig===lastSig&&state.delays.length){state.delays[state.delays.length-1]+=s.delay}else{state.frames.push(raw);state.delays.push(s.delay);lastSig=sig}
+   if(n%2===0)setProgress(n/count,'Converting frame '+(n+1).toLocaleString()+' / '+count.toLocaleString());
+   await new Promise(function(r){setTimeout(r,0)});
+ }
+ $('previewStatus').textContent=state.frames.length.toLocaleString()+' frame'+(state.frames.length===1?'':'s')+' ready';$('previewFrame').textContent=state.frames.length+' frames';return state.frames.length;
+}
+function drawBitmap(frame,w,h,canvas){var ctx=canvas.getContext('2d'),img=ctx.createImageData(w,h),i=0;for(var y=0;y<h;y++)for(var x=0;x<w;x++,i++){var on=(frame[y*Math.ceil(w/8)+(x>>3)]&(1<<(7-(x&7))))!==0,p=i*4,v=on?255:0;img.data[p]=v;img.data[p+1]=v;img.data[p+2]=v;img.data[p+3]=255}var tmp=document.createElement('canvas');tmp.width=w;tmp.height=h;tmp.getContext('2d').putImageData(img,0,0);ctx.imageSmoothingEnabled=false;ctx.clearRect(0,0,canvas.width,canvas.height);ctx.drawImage(tmp,0,0,canvas.width,canvas.height)}
+function rle(a){var out=[];for(var i=0;i<a.length;){var v=a[i],j=i+1;while(j<a.length&&a[j]===v&&j-i<255)j++;out.push(j-i,v);i=j}return new Uint8Array(out)}
+function encodedFrames(){
+ var data=[],offsets=[],lengths=[],rawFlags=[];for(var i=0;i<state.frames.length;i++){var raw=state.frames[i],enc=rle(raw);offsets.push(data.length);if($('compression').checked&&enc.length<raw.length){for(var j=0;j<enc.length;j++)data.push(enc[j]);lengths.push(enc.length);rawFlags.push(0)}else{for(var k=0;k<raw.length;k++)data.push(raw[k]);lengths.push(raw.length);rawFlags.push(1)}}return {data:new Uint8Array(data),offsets:offsets,lengths:lengths,raw:rawFlags}}
+function hexLines(a){var out=[];for(var i=0;i<a.length;i+=16){var line=[];for(var j=i;j<Math.min(i+16,a.length);j++)line.push('0x'+a[j].toString(16).padStart(2,'0'));out.push('  '+line.join(', '))}return out.join(',\n')}
+function uintLines(a){var out=[];for(var i=0;i<a.length;i+=12)out.push('  '+a.slice(i,i+12).join(', '));return out.join(',\n')}
+function genHeader(){
+ var enc=encodedFrames(),fc=state.frames.length;
+ return '#pragma once\n#include <Arduino.h>\n#include <pgmspace.h>\n\n#define OLED_ANIM_FRAME_COUNT '+fc+'u\n#define OLED_ANIM_WIDTH '+state.width+'u\n#define OLED_ANIM_HEIGHT '+state.height+'u\n#define OLED_ANIM_BYTES_PER_FRAME '+state.bytes+'u\n#define OLED_ANIM_DATA_SIZE '+enc.data.length+'u\n\nstatic const uint32_t OLED_ANIM_OFFSETS[OLED_ANIM_FRAME_COUNT] PROGMEM = {\n'+uintLines(enc.offsets)+'\n};\nstatic const uint32_t OLED_ANIM_LENGTHS[OLED_ANIM_FRAME_COUNT] PROGMEM = {\n'+uintLines(enc.lengths)+'\n};\nstatic const uint8_t OLED_ANIM_RAW[OLED_ANIM_FRAME_COUNT] PROGMEM = {\n'+uintLines(enc.raw)+'\n};\nstatic const uint16_t OLED_ANIM_DELAYS[OLED_ANIM_FRAME_COUNT] PROGMEM = {\n'+uintLines(state.delays)+'\n};\n\nstatic const uint8_t OLED_ANIM_DATA[OLED_ANIM_DATA_SIZE] PROGMEM = {\n'+hexLines(enc.data)+'\n};\n';
+}
+function genSketch(){
+ var loop=$('loop').checked;
+ return '#include <Wire.h>\n#include <Adafruit_GFX.h>\n#include <Adafruit_SSD1306.h>\n#include <string.h>\n#include "animation.h"\n\n#define SCREEN_WIDTH OLED_ANIM_WIDTH\n#define SCREEN_HEIGHT OLED_ANIM_HEIGHT\n#define OLED_RESET -1\n#define OLED_ADDRESS 0x3C\n\nAdafruit_SSD1306 display(SCREEN_WIDTH, SCREEN_HEIGHT, &Wire, OLED_RESET);\nstatic uint8_t frameBuffer[OLED_ANIM_BYTES_PER_FRAME];\n\nvoid loadFrame(uint16_t frame){\n  uint32_t off=pgm_read_dword(&OLED_ANIM_OFFSETS[frame]);\n  uint32_t len=pgm_read_dword(&OLED_ANIM_LENGTHS[frame]);\n  uint8_t isRaw=pgm_read_byte(&OLED_ANIM_RAW[frame]);\n  if(isRaw){ memcpy_P(frameBuffer, OLED_ANIM_DATA+off, OLED_ANIM_BYTES_PER_FRAME); return; }\n  uint32_t p=0; uint32_t out=0;\n  while(out<OLED_ANIM_BYTES_PER_FRAME && p<len){\n    uint8_t count=pgm_read_byte(&OLED_ANIM_DATA[off+p++]);\n    uint8_t value=pgm_read_byte(&OLED_ANIM_DATA[off+p++]);\n    for(uint16_t n=0;n<count && out<OLED_ANIM_BYTES_PER_FRAME;n++) frameBuffer[out++]=value;\n  }\n}\n\nvoid drawFrame(uint16_t frame){\n  loadFrame(frame);\n  display.clearDisplay();\n  display.drawBitmap(0,0,frameBuffer,SCREEN_WIDTH,SCREEN_HEIGHT,SSD1306_WHITE);\n  display.display();\n}\n\nvoid playAnimation(){\n  for(uint16_t frame=0; frame<OLED_ANIM_FRAME_COUNT; frame++){\n    drawFrame(frame);\n    delay(pgm_read_word(&OLED_ANIM_DELAYS[frame]));\n  }\n}\n\nvoid setup(){\n  Wire.begin(21,22);\n  if(!display.begin(SSD1306_SWITCHCAPVCC, OLED_ADDRESS)){ while(true){ delay(1000); } }\n  display.clearDisplay();\n  display.display();\n}\n\nvoid loop(){\n  playAnimation();\n'+(loop?'':'  while(true){ delay(1000); }\n')+'}\n';
+}
+function genReadme(){
+ var e=encodedFrames(),avg=state.delays.reduce(function(a,b){return a+b},0)/Math.max(1,state.delays.length);return 'ESP32 OLED Animation Project\n============================\n\nGenerated by OLEDFrame Studio.\n\nHardware\n--------\nESP32 WROOM-32\nSSD1306 OLED '+state.width+'x'+state.height+'\nSDA -> GPIO 21\nSCL -> GPIO 22\nI2C address -> 0x3C\n\nArduino libraries\n-----------------\n- Adafruit GFX Library\n- Adafruit SSD1306\n\nProject details\n---------------\nResolution: '+state.width+'x'+state.height+'\nFrames: '+state.frames.length+'\nAverage delay: '+avg.toFixed(1)+' ms\nApprox effective FPS: '+(1000/avg).toFixed(2)+'\nEncoded data: '+human(e.data.length)+'\n\nUpload\n------\n1. Open ESP32_OLED_Animation.ino in Arduino IDE.\n2. Install Adafruit GFX Library and Adafruit SSD1306 Library.\n3. Select your ESP32 board and COM port.\n4. Upload.\n\nNotes\n-----\nFrames are stored in PROGMEM. Individual frames use raw packed bits or RLE when the compressed representation is smaller. Very long animations can still exceed available flash.\n';
+}
+async function makeZip(){
+ if(!window.JSZip)throw new Error('ZIP library did not load. Reload the page while online.');
+ var z=new JSZip(),folder=z.folder('ESP32_OLED_Animation');folder.file('ESP32_OLED_Animation.ino',genSketch());folder.file('animation.h',genHeader());folder.file('README.txt',genReadme());return z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},function(m){setProgress(.92+m.percent/100*.08,'Packaging project '+m.percent.toFixed(0)+'%')});
+}
+function download(blob,name){var a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500)}
+async function preview(){
+ if(state.busy)return;if(!state.duration){toast('Choose a video first.');return}state.busy=true;$('previewBtn').disabled=true;$('generateBtn').disabled=true;
+ try{setProgress(0,'Generating preview frames…');await generateFrames();for(var i=0;i<state.frames.length;i++){drawBitmap(state.frames[i],state.width,state.height,$('previewCanvas'));$('previewFrame').textContent=(i+1).toLocaleString()+' / '+state.frames.length.toLocaleString();await new Promise(function(r){setTimeout(r,state.delays[i])})}$('previewStatus').textContent=state.frames.length.toLocaleString()+' frames ready';setProgress(1,'Preview ready')}catch(e){toast(e.message);$('previewStatus').textContent=e.message}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
+async function generate(){
+ if(state.busy)return;if(!state.duration){toast('Choose a video first.');return}state.busy=true;$('previewBtn').disabled=true;$('generateBtn').disabled=true;
+ try{setProgress(0,'Preparing conversion…');await generateFrames();setProgress(.92,'Packaging Arduino project…');var zip=await makeZip();download(zip,'ESP32_OLED_Animation.zip');setProgress(1,'Project ZIP generated successfully');toast('Project ZIP downloaded.')}catch(e){toast(e.message);setProgress(0,e.message)}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
+function reset(){
+ if(state.url&&state.url.indexOf('blob:')===0)URL.revokeObjectURL(state.url);state={duration:0,name:'',url:null,width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};$('videoInput').value='';$('videoUrl').value='';$('sourceVideo').removeAttribute('src');$('sourceVideo').load();$('metaName').textContent='—';$('metaDuration').textContent='—';$('metaFps').textContent='—';$('metaResolution').textContent='—';$('startRange').max=1;$('endRange').max=1;$('startRange').value=0;$('endRange').value=1;$('startTime').value='00:00';$('endTime').value='00:00';$('selectedDuration').textContent='0.0 s';$('selectedSeconds').value='0.0 s';$('timelineFill').style.left='0';$('timelineFill').style.width='0';setVideoStatus('Waiting for video',false);clearPreview();$('progressWrap').classList.add('hidden');estimate()}
+document.querySelectorAll('[data-tab]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-tab]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});$(b.dataset.tab+'Panel').classList.add('active')}})
+document.querySelectorAll('[data-mode]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-mode]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');state.mode=b.dataset.mode;if(state.duration){if(state.mode==='full'){$('startRange').value=0;$('endRange').value=state.duration}updateTimeline()}}})
+$('videoInput').addEventListener('change',function(e){var f=e.target.files&&e.target.files[0];if(!f)return;loadVideo(URL.createObjectURL(f),f.name).catch(function(e2){toast(e2.message);setVideoStatus('Video failed',false)})})
+$('dropZone').addEventListener('dragover',function(e){e.preventDefault();$('dropZone').classList.add('drag')});$('dropZone').addEventListener('dragleave',function(){$('dropZone').classList.remove('drag')});$('dropZone').addEventListener('drop',function(e){e.preventDefault();$('dropZone').classList.remove('drag');var f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){$('videoInput').files=e.dataTransfer.files;$('videoInput').dispatchEvent(new Event('change'))}})
+$('loadUrlBtn').onclick=function(){var u=$('videoUrl').value.trim();if(!u){toast('Enter a direct video URL.');return}loadVideo(u,u.split('/').pop().split('?')[0]||'remote-video').catch(function(e){toast(e.message);setVideoStatus('URL failed',false)})}
+$('startRange').oninput=$('endRange').oninput=updateTimeline
+$('startTime').onchange=function(){if(state.duration){$('startRange').value=clamp(parseTime(this.value),0,state.duration);updateTimeline()}}
+$('endTime').onchange=function(){if(state.duration){$('endRange').value=clamp(parseTime(this.value),0,state.duration);updateTimeline()}}
+$('autoToggle').onclick=function(){state.auto=!state.auto;this.classList.toggle('on',state.auto);this.setAttribute('aria-pressed',String(state.auto));estimate()}
+$('fpsSelect').onchange=function(){$('customFpsWrap').classList.toggle('hidden',this.value!=='custom');$('fpsHelp').textContent=this.value==='custom'?$('customFps').value:this.value;estimate()}
+$('customFps').oninput=function(){$('fpsHelp').textContent=this.value;estimate()}
+;['optimizationMode','resolution','fitMode','dither','invert','dedupe','compression','loop'].forEach(function(id){$(id).addEventListener('change',estimate)})
+;['brightness','contrast','threshold'].forEach(function(id){$(id).oninput=function(){$(id+'Value').textContent=this.value;estimate()}})
+$('advancedBtn').onclick=function(){var p=$('advancedPanel');p.classList.toggle('hidden');this.textContent=p.classList.contains('hidden')?'Show advanced settings':'Hide advanced settings'}
+$('previewBtn').onclick=preview;$('generateBtn').onclick=generate;$('resetBtn').onclick=reset;$('resetBtn2').onclick=reset
+estimate();clearPreview();
+})();
+</script>
+</body>
+</html>
