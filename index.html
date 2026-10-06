@@ -37,7 +37,7 @@ button,input,select{font:inherit}.wrap{max-width:1260px;margin:0 auto;padding:24
       </div>
       <div class="panel" id="urlPanel">
         <div class="row"><input class="input" id="videoUrl" placeholder="https://example.com/video.mp4"><button class="btn primary" id="loadUrlBtn">Load</button></div>
-        <div class="note">A YouTube watch-page URL is not a direct video file. This MVP supports direct video URLs that the browser can load; YouTube import is reserved for the server-side media processor.</div>
+        <div class="note" id="processorNote">Processor: checking hosted media processor… Direct browser-loadable videos work locally; YouTube links use the hosted processor when it is connected.</div>
       </div>
       <div class="meta"><div><span>File</span><strong id="metaName">—</strong></div><div><span>Duration</span><strong id="metaDuration">—</strong></div><div><span>Source FPS</span><strong id="metaFps">—</strong></div><div><span>Resolution</span><strong id="metaResolution">—</strong></div></div>
       <video id="sourceVideo" preload="metadata" playsinline muted style="display:none"></video>
@@ -111,9 +111,38 @@ button,input,select{font:inherit}.wrap{max-width:1260px;margin:0 auto;padding:24
 (function(){
 'use strict';
 var $=function(id){return document.getElementById(id)};
-var state={duration:0,name:'',url:null,width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};
+var state={duration:0,name:'',url:null,remote:false,remoteUrl:'',width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};
+var PROCESSOR_URL='';
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
+function isYouTubeUrl(url){
+ try{var h=new URL(url).hostname.replace(/^www\\./,'').toLowerCase();return h==='youtube.com'||h==='m.youtube.com'||h==='youtu.be'}catch(e){return false}
+}
+function processorEndpoint(path){return (PROCESSOR_URL||'').replace(/\\/$/,'')+path}
+async function processorRequest(path,body){
+ if(!PROCESSOR_URL)throw new Error('Media processor is not connected yet. Deploy the processor service and set PROCESSOR_URL in Vercel.');
+ var response=await fetch(processorEndpoint(path),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
+ var type=response.headers.get('content-type')||'';
+ if(!response.ok){var err=type.indexOf('application/json')>=0?await response.json():{error:await response.text()};throw new Error(err.error||'Media processor request failed.')}
+ return type.indexOf('application/json')>=0?response.json():response.blob();
+}
+async function initProcessor(){
+ try{
+   var response=await fetch('/api/config',{cache:'no-store'});
+   if(!response.ok)return;
+   var cfg=await response.json();
+   PROCESSOR_URL=(cfg.processorUrl||'').replace(/\\/$/,'');
+   $('processorNote').textContent=PROCESSOR_URL?'Processor: connected · YouTube/direct URL processing is available.':'Processor: not connected · upload videos still work entirely in the browser.';
+   $('processorNote').style.color=PROCESSOR_URL?'#bde39b':'';
+ }catch(e){}
+}
+function remoteOptions(){
+ var s=effectiveSettings();
+ return {url:state.remoteUrl,start:s.start,end:s.end,width:s.r.w,height:s.r.h,fps:s.fps,threshold:Number($('threshold').value),brightness:Number($('brightness').value),contrast:Number($('contrast').value),dither:$('dither').value,invert:$('invert').checked,dedupe:$('dedupe').checked,compression:$('compression').checked,fit:s.fit,loop:$('loop').checked};
+}
+function base64Bytes(value){
+ var bin=atob(value),out=new Uint8Array(bin.length);for(var i=0;i<bin.length;i++)out[i]=bin.charCodeAt(i);return out;
+}
 function fmt(s){s=Math.max(0,Number(s)||0);var h=Math.floor(s/3600),m=Math.floor((s%3600)/60),sec=Math.floor(s%60);return h?String(h).padStart(2,'0')+':'+String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0'):String(m).padStart(2,'0')+':'+String(sec).padStart(2,'0')}
 function parseTime(v){var p=String(v||'').trim().split(':').map(Number);if(p.some(function(n){return Number.isNaN(n)}))return NaN;if(p.length===3)return p[0]*3600+p[1]*60+p[2];if(p.length===2)return p[0]*60+p[1];return Number(v)}
 function resolution(){var p=$('resolution').value.split('x').map(Number);return {w:p[0],h:p[1],bytes:Math.ceil(p[0]*p[1]/8)}}
@@ -147,6 +176,13 @@ function loadVideo(src,name){
    var cleanup=function(){v.removeEventListener('loadedmetadata',good);v.removeEventListener('error',bad)};
    v.addEventListener('loadedmetadata',good);v.addEventListener('error',bad);
  });
+}
+async function loadRemoteInfo(url,name){
+ var info=await processorRequest('/api/info',{url:url});
+ state.remote=true;state.remoteUrl=url;state.url=null;state.duration=Number(info.duration||0);state.sourceW=Number(info.width||0);state.sourceH=Number(info.height||0);state.name=name||info.title||'remote-video';
+ $('metaName').textContent=state.name;$('metaDuration').textContent=fmt(state.duration);$('metaFps').textContent=info.fps?Number(info.fps).toFixed(2)+' FPS':'—';$('metaResolution').textContent=(state.sourceW&&state.sourceH)?state.sourceW+' × '+state.sourceH:'—';
+ $('startRange').max=state.duration;$('endRange').max=state.duration;$('startRange').value=0;$('endRange').value=state.duration;$('startTime').value='00:00';$('endTime').value=fmt(state.duration);
+ setVideoStatus(info.source==='youtube'?'YouTube video ready':'Remote video ready',true);updateTimeline();clearPreview('Ready to process on server');
 }
 function clearPreview(msg){var c=$('previewCanvas'),x=c.getContext('2d');x.fillStyle='#020303';x.fillRect(0,0,c.width,c.height);$('previewStatus').textContent=msg||'No frames yet';$('previewFrame').textContent='Ready';state.frames=[];state.delays=[]}
 function seek(t){
@@ -216,19 +252,32 @@ async function makeZip(){
  var z=new JSZip(),folder=z.folder('ESP32_OLED_Animation');folder.file('ESP32_OLED_Animation.ino',genSketch());folder.file('animation.h',genHeader());folder.file('README.txt',genReadme());return z.generateAsync({type:'blob',compression:'DEFLATE',compressionOptions:{level:6}},function(m){setProgress(.92+m.percent/100*.08,'Packaging project '+m.percent.toFixed(0)+'%')});
 }
 function download(blob,name){var a=document.createElement('a'),u=URL.createObjectURL(blob);a.href=u;a.download=name;document.body.appendChild(a);a.click();a.remove();setTimeout(function(){URL.revokeObjectURL(u)},1500)}
+async function previewRemote(){
+ var result=await processorRequest('/api/preview',remoteOptions());
+ state.frames=(result.frames||[]).map(base64Bytes);state.delays=result.delays||[];
+ if(!state.frames.length)throw new Error('Processor returned no preview frames.');
+ $('previewStatus').textContent=state.frames.length+' preview frames ready';$('previewFrame').textContent='Remote preview';
+ for(var i=0;i<state.frames.length;i++){drawBitmap(state.frames[i],state.width,state.height,$('previewCanvas'));$('previewFrame').textContent=(i+1)+' / '+state.frames.length;await new Promise(function(r){setTimeout(r,state.delays[i]||100)})}
+ $('previewStatus').textContent=state.frames.length+' preview frames ready';
+}
 async function preview(){
  if(state.busy)return;if(!state.duration){toast('Choose a video first.');return}state.busy=true;$('previewBtn').disabled=true;$('generateBtn').disabled=true;
- try{setProgress(0,'Generating preview frames…');await generateFrames();for(var i=0;i<state.frames.length;i++){drawBitmap(state.frames[i],state.width,state.height,$('previewCanvas'));$('previewFrame').textContent=(i+1).toLocaleString()+' / '+state.frames.length.toLocaleString();await new Promise(function(r){setTimeout(r,state.delays[i])})}$('previewStatus').textContent=state.frames.length.toLocaleString()+' frames ready';setProgress(1,'Preview ready')}catch(e){toast(e.message);$('previewStatus').textContent=e.message}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
+ try{setProgress(0,state.remote?'Requesting server preview…':'Generating preview frames…');if(state.remote){await previewRemote()}else{await generateFrames();for(var i=0;i<state.frames.length;i++){drawBitmap(state.frames[i],state.width,state.height,$('previewCanvas'));$('previewFrame').textContent=(i+1).toLocaleString()+' / '+state.frames.length.toLocaleString();await new Promise(function(r){setTimeout(r,state.delays[i])})}$('previewStatus').textContent=state.frames.length.toLocaleString()+' frames ready'}setProgress(1,'Preview ready')}catch(e){toast(e.message);$('previewStatus').textContent=e.message}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
+async function generateRemote(){
+ var blob=await processorRequest('/api/convert',remoteOptions());
+ download(blob,'ESP32_OLED_Animation.zip');
+ toast('Project ZIP generated by the media processor.');
+}
 async function generate(){
  if(state.busy)return;if(!state.duration){toast('Choose a video first.');return}state.busy=true;$('previewBtn').disabled=true;$('generateBtn').disabled=true;
- try{setProgress(0,'Preparing conversion…');await generateFrames();setProgress(.92,'Packaging Arduino project…');var zip=await makeZip();download(zip,'ESP32_OLED_Animation.zip');setProgress(1,'Project ZIP generated successfully');toast('Project ZIP downloaded.')}catch(e){toast(e.message);setProgress(0,e.message)}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
+ try{setProgress(0,state.remote?'Sending job to media processor…':'Preparing conversion…');if(state.remote){await generateRemote();setProgress(1,'Project ZIP generated successfully')}else{await generateFrames();setProgress(.92,'Packaging Arduino project…');var zip=await makeZip();download(zip,'ESP32_OLED_Animation.zip');setProgress(1,'Project ZIP generated successfully');toast('Project ZIP downloaded.')}}catch(e){toast(e.message);setProgress(0,e.message)}finally{state.busy=false;$('previewBtn').disabled=false;$('generateBtn').disabled=!state.duration}}
 function reset(){
- if(state.url&&state.url.indexOf('blob:')===0)URL.revokeObjectURL(state.url);state={duration:0,name:'',url:null,width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};$('videoInput').value='';$('videoUrl').value='';$('sourceVideo').removeAttribute('src');$('sourceVideo').load();$('metaName').textContent='—';$('metaDuration').textContent='—';$('metaFps').textContent='—';$('metaResolution').textContent='—';$('startRange').max=1;$('endRange').max=1;$('startRange').value=0;$('endRange').value=1;$('startTime').value='00:00';$('endTime').value='00:00';$('selectedDuration').textContent='0.0 s';$('selectedSeconds').value='0.0 s';$('timelineFill').style.left='0';$('timelineFill').style.width='0';setVideoStatus('Waiting for video',false);clearPreview();$('progressWrap').classList.add('hidden');estimate()}
+ if(state.url&&state.url.indexOf('blob:')===0)URL.revokeObjectURL(state.url);state={duration:0,name:'',url:null,remote:false,remoteUrl:'',width:128,height:64,bytes:1024,sourceW:0,sourceH:0,frames:[],delays:[],busy:false,mode:'full',auto:true};$('videoInput').value='';$('videoUrl').value='';$('sourceVideo').removeAttribute('src');$('sourceVideo').load();$('metaName').textContent='—';$('metaDuration').textContent='—';$('metaFps').textContent='—';$('metaResolution').textContent='—';$('startRange').max=1;$('endRange').max=1;$('startRange').value=0;$('endRange').value=1;$('startTime').value='00:00';$('endTime').value='00:00';$('selectedDuration').textContent='0.0 s';$('selectedSeconds').value='0.0 s';$('timelineFill').style.left='0';$('timelineFill').style.width='0';setVideoStatus('Waiting for video',false);clearPreview();$('progressWrap').classList.add('hidden');estimate()}
 document.querySelectorAll('[data-tab]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-tab]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');document.querySelectorAll('.panel').forEach(function(p){p.classList.remove('active')});$(b.dataset.tab+'Panel').classList.add('active')}})
 document.querySelectorAll('[data-mode]').forEach(function(b){b.onclick=function(){document.querySelectorAll('[data-mode]').forEach(function(x){x.classList.remove('active')});b.classList.add('active');state.mode=b.dataset.mode;if(state.duration){if(state.mode==='full'){$('startRange').value=0;$('endRange').value=state.duration}updateTimeline()}}})
 $('videoInput').addEventListener('change',function(e){var f=e.target.files&&e.target.files[0];if(!f)return;loadVideo(URL.createObjectURL(f),f.name).catch(function(e2){toast(e2.message);setVideoStatus('Video failed',false)})})
 $('dropZone').addEventListener('dragover',function(e){e.preventDefault();$('dropZone').classList.add('drag')});$('dropZone').addEventListener('dragleave',function(){$('dropZone').classList.remove('drag')});$('dropZone').addEventListener('drop',function(e){e.preventDefault();$('dropZone').classList.remove('drag');var f=e.dataTransfer.files&&e.dataTransfer.files[0];if(f){$('videoInput').files=e.dataTransfer.files;$('videoInput').dispatchEvent(new Event('change'))}})
-$('loadUrlBtn').onclick=function(){var u=$('videoUrl').value.trim();if(!u){toast('Enter a direct video URL.');return}loadVideo(u,u.split('/').pop().split('?')[0]||'remote-video').catch(function(e){toast(e.message);setVideoStatus('URL failed',false)})}
+$('loadUrlBtn').onclick=async function(){var u=$('videoUrl').value.trim();if(!u){toast('Enter a video URL.');return}try{if(isYouTubeUrl(u)){await loadRemoteInfo(u,'YouTube video')}else{try{await loadVideo(u,u.split('/').pop().split('?')[0]||'remote-video')}catch(browserErr){if(!PROCESSOR_URL)throw browserErr;await loadRemoteInfo(u,u.split('/').pop().split('?')[0]||'remote-video')}}}catch(e){toast(e.message);setVideoStatus('URL failed',false)}}
 $('startRange').oninput=$('endRange').oninput=updateTimeline
 $('startTime').onchange=function(){if(state.duration){$('startRange').value=clamp(parseTime(this.value),0,state.duration);updateTimeline()}}
 $('endTime').onchange=function(){if(state.duration){$('endRange').value=clamp(parseTime(this.value),0,state.duration);updateTimeline()}}
@@ -239,7 +288,7 @@ $('customFps').oninput=function(){$('fpsHelp').textContent=this.value;estimate()
 ;['brightness','contrast','threshold'].forEach(function(id){$(id).oninput=function(){$(id+'Value').textContent=this.value;estimate()}})
 $('advancedBtn').onclick=function(){var p=$('advancedPanel');p.classList.toggle('hidden');this.textContent=p.classList.contains('hidden')?'Show advanced settings':'Hide advanced settings'}
 $('previewBtn').onclick=preview;$('generateBtn').onclick=generate;$('resetBtn').onclick=reset;$('resetBtn2').onclick=reset
-estimate();clearPreview();
+estimate();clearPreview();initProcessor();
 })();
 </script>
 </body>
