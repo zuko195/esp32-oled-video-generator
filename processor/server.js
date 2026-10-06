@@ -9,6 +9,9 @@ const PORT = Number(process.env.PORT || 10000);
 const MAX_DURATION_SECONDS = 600;
 const ALLOWED_WIDTHS = new Set([128]);
 const ALLOWED_HEIGHTS = new Set([32, 64]);
+const YOUTUBE_CACHE_TTL_MS = 60_000;
+const youtubeInfoCache = new Map();
+const youtubeStreamCache = new Map();
 
 app.use(cors({ origin: true, methods: ['GET', 'POST'], allowedHeaders: ['Content-Type'] }));
 app.use(express.json({ limit: '64kb' }));
@@ -22,9 +25,23 @@ function youtubeArgs(extra=[]) {
   return [
     ...extra,
     '--js-runtimes','node',
-    '--extractor-args','youtubepot-bgutilscript:script_path=/opt/bgutil-ytdlp-pot-provider/server/build/generate_once.js',
     '--extractor-args','youtube:player-client=mweb'
   ];
+}
+
+function cacheGet(map, key) {
+  const hit = map.get(key);
+  if (!hit) return null;
+  if (Date.now() - hit.time > YOUTUBE_CACHE_TTL_MS) {
+    map.delete(key);
+    return null;
+  }
+  return hit.value;
+}
+
+function cachePut(map, key, value) {
+  map.set(key, { time: Date.now(), value });
+  return value;
 }
 
 function isYoutube(url) {
@@ -54,16 +71,18 @@ function run(cmd, args, timeoutMs = 120000) {
 async function infoFor(url) {
   try { new URL(url); } catch { throw new Error('Invalid video URL.'); }
   if (isYoutube(url)) {
+    const cached = cacheGet(youtubeInfoCache, url);
+    if (cached) return cached;
     const { stdout } = await run('yt-dlp', youtubeArgs(['--dump-single-json', '--no-playlist', '--no-warnings', url]), 90000);
     const d = JSON.parse(stdout);
-    return {
+    return cachePut(youtubeInfoCache, url, {
       title: d.title || 'YouTube video',
       duration: Number(d.duration || 0),
       width: Number(d.width || 0),
       height: Number(d.height || 0),
       fps: Number(d.fps || 0) || null,
       source: 'youtube'
-    };
+    });
   }
 
   const { stdout } = await run('ffprobe', [
@@ -86,6 +105,8 @@ async function infoFor(url) {
 
 async function playableUrl(url) {
   if (!isYoutube(url)) return url;
+  const cached = cacheGet(youtubeStreamCache, url);
+  if (cached) return cached;
   const { stdout } = await run('yt-dlp', youtubeArgs([
     '-g','--no-playlist',
     '-f','bestvideo[height<=720]/bestvideo/best',
@@ -93,7 +114,7 @@ async function playableUrl(url) {
   ]), 120000);
   const first = stdout.trim().split(/\r?\n/).find(Boolean);
   if (!first) throw new Error('yt-dlp did not return a playable video stream.');
-  return first;
+  return cachePut(youtubeStreamCache, url, first);
 }
 
 function packedFrame(gray, width, height, o) {
