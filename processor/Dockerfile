@@ -17,4 +17,5 @@ COPY processor/server.js ./server.js
 
 ENV NODE_ENV=production PORT=10000
 EXPOSE 10000
-CMD ["npm","start"]
+
+CMD ["sh","-c","node /opt/bgutil-ytdlp-pot-provider/server/build/main.js >/tmp/bgutil.log 2>&1 & sleep 2; exec npm start"]
