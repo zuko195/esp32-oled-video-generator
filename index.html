@@ -116,9 +116,9 @@ var PROCESSOR_URL='';
 
 function clamp(v,a,b){return Math.max(a,Math.min(b,v))}
 function isYouTubeUrl(url){
- try{var h=new URL(url).hostname.replace(/^www\\./,'').toLowerCase();return h==='youtube.com'||h==='m.youtube.com'||h==='youtu.be'}catch(e){return false}
+ try{var h=new URL(url).hostname.replace(/^www\./,'').toLowerCase();return h==='youtube.com'||h==='m.youtube.com'||h==='youtu.be'}catch(e){return false}
 }
-function processorEndpoint(path){return (PROCESSOR_URL||'').replace(/\\/$/,'')+path}
+function processorEndpoint(path){return (PROCESSOR_URL||'').replace(/\/$/,'')+path}
 async function processorRequest(path,body){
  if(!PROCESSOR_URL)throw new Error('Media processor is not connected yet. Deploy the processor service and set PROCESSOR_URL in Vercel.');
  var response=await fetch(processorEndpoint(path),{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(body)});
@@ -131,7 +131,7 @@ async function initProcessor(){
    var response=await fetch('/api/config',{cache:'no-store'});
    if(!response.ok)return;
    var cfg=await response.json();
-   PROCESSOR_URL=(cfg.processorUrl||'').replace(/\\/$/,'');
+   PROCESSOR_URL=(cfg.processorUrl||'').replace(/\/$/,'');
    $('processorNote').textContent=PROCESSOR_URL?'Processor: connected · YouTube/direct URL processing is available.':'Processor: not connected · upload videos still work entirely in the browser.';
    $('processorNote').style.color=PROCESSOR_URL?'#bde39b':'';
  }catch(e){}
